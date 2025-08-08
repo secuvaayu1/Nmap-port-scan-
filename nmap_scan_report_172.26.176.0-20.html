@@ -1,0 +1,134 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Nmap Scan Report - 172.26.176.0/20</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; line-height:1.4; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; margin-top: 18px; }
+    pre { background:#f5f5f5; padding:10px; border-radius:6px; overflow:auto; }
+    table { border-collapse: collapse; width: 100%; margin-top:10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align:left; }
+    th { background:#eee; }
+    .note { background:#fffbe6; padding:8px; border-left:4px solid #ffcc00; }
+  </style>
+</head>
+<body>
+  <h1>Nmap Scan Report</h1>
+  <p><strong>Date:</strong> 2025-08-08</p>
+  <h2>Target / Scope</h2>
+  <ul>
+    <li><strong>Original command (example):</strong> nmap -sS 192.168.1.0/24</li>
+    <li><strong>Actual scanned network (from your machine):</strong> <code>172.26.176.0/20</code></li>
+    <li><strong>Hosts scanned:</strong> 4096 IPs (172.26.176.0 - 172.26.191.255)</li>
+  </ul>
+
+  <h2>Commands run</h2>
+  <pre>
+sudo nmap -sS 172.26.176.0/20
+sudo nmap -p- -sS 172.26.176.0/20
+  </pre>
+
+  <h2>Raw nmap output (top-ports scan)</h2>
+  <pre>
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-08-08 19:44 IST
+Nmap scan report for Gopal.mshome.net (172.26.176.1)
+Host is up (0.00050s latency).
+All 1000 scanned ports on Gopal.mshome.net (172.26.176.1) are in ignored states.
+Not shown: 1000 filtered tcp ports (no-response)
+MAC Address: 00:15:5D:05:DD:83 (Microsoft)
+
+Nmap scan report for 172.26.183.233 (172.26.183.233)
+Host is up (0.000017s latency).
+All 1000 scanned ports on 172.26.183.233 (172.26.183.233) are in ignored states.
+Not shown: 1000 closed tcp ports (reset)
+  </pre>
+
+  <h2>Raw nmap output (full-port scan)</h2>
+  <pre>
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-08-08 19:53 IST
+Nmap scan report for Gopal.mshome.net (172.26.176.1)
+Host is up (0.00056s latency).
+Not shown: 65524 filtered tcp ports (no-response)
+PORT      STATE SERVICE
+5754/tcp  open  unknown
+6850/tcp  open  iccrushmore
+7680/tcp  open  pando-pub
+9012/tcp  open  unknown
+9013/tcp  open  unknown
+53540/tcp open  unknown
+53541/tcp open  unknown
+53542/tcp open  unknown
+53543/tcp open  unknown
+53544/tcp open  unknown
+53545/tcp open  unknown
+MAC Address: 00:15:5D:05:DD:83 (Microsoft)
+
+Nmap scan report for 172.26.183.233 (172.26.183.233)
+Host is up (0.000018s latency).
+All 65535 scanned ports on 172.26.183.233 (172.26.183.233) are in ignored states.
+Not shown: 65535 closed tcp ports (reset)
+  </pre>
+
+  <h2>Identified hosts & open ports</h2>
+  <table>
+    <tr><th>IP / Hostname</th><th>MAC Vendor</th><th>Open ports (TCP)</th><th>Notes</th></tr>
+    <tr>
+      <td>172.26.176.1<br><em>Gopal.mshome.net</em></td>
+      <td>Microsoft</td>
+      <td>5754, 6850, 7680, 9012, 9013, 53540-53545</td>
+      <td>Likely a Windows host / Hyper-V or Windows networking service (Delivery Optimization on 7680). Several unknown/custom ports—requires service detection & banner grabbing.</td>
+    </tr>
+    <tr>
+      <td>172.26.183.233</td>
+      <td>—</td>
+      <td>none (all TCP ports closed)</td>
+      <td>Your Kali machine; no TCP listeners discovered.</td>
+    </tr>
+  </table>
+
+  <h2>Service identification (recommended commands)</h2>
+  <ul>
+    <li>Service/version detection for the open ports:
+      <pre>sudo nmap -sV -p 5754,6850,7680,9012,9013,53540-53545 172.26.176.1</pre>
+    </li>
+    <li>Banner grab with netcat (example):
+      <pre>nc -v 172.26.176.1 5754</pre>
+    </li>
+    <li>Use NSE scripts for additional probes:
+      <pre>sudo nmap -sV --script=banner,safe -p 7680,5754,6850,9012,9013 172.26.176.1</pre>
+    </li>
+  </ul>
+
+  <h2>Common services & quick research notes</h2>
+  <ul>
+    <li><strong>7680/tcp (pando-pub)</strong> — Windows Delivery Optimization / P2P update traffic. Not typically a remote code risk but can be used to move files if misconfigured.</li>
+    <li><strong>High ephemeral ports (53540–53545)</strong> — Could be application ephemeral listeners or RPC-style ports; investigate with banner grabs.</li>
+    <li><strong>Other unknown ports (5754, 6850, 9012, 9013)</strong> — Could be vendor/proprietary services, management interfaces, or debug endpoints.</li>
+  </ul>
+
+  <h2>Potential security risks</h2>
+  <ul>
+    <li>Exposed management or debug interfaces on unknown ports may allow unauthorized access if they lack authentication.</li>
+    <li>Delivery Optimization (7680) could be abused to exchange files if other controls are absent.</li>
+    <li>Filtered ports on many hosts suggest a firewall; however, exposed ports on the gateway host increase attack surface.</li>
+  </ul>
+
+  <h2>Recommended remediation & next steps</h2>
+  <ol>
+    <li>Run service/version detection (see commands above) and capture banners.</li>
+    <li>If services are unnecessary, disable them or restrict access via firewall rules.</li>
+    <li>Harden Windows Delivery Optimization (if that's the service on 7680) or restrict it to the local network only.</li>
+    <li>Check for authentication on any management endpoints; enforce strong credentials and MFA where possible.</li>
+    <li>Document findings in your assessment report and only perform intrusive testing with permission.</li>
+  </ol>
+
+  <h2>Files & saved outputs</h2>
+  <p>This HTML file contains the report. If you ran the commands with <code>-oX</code> or <code>-oN</code> you may attach those outputs to this report.</p>
+
+  <div class="note"><strong>Note:</strong> This report is based solely on the Nmap outputs you pasted. For precise identification, run the service detection command above and attach those results; I can then update the report.</div>
+
+</body>
+</html>
